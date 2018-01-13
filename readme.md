@@ -8,11 +8,7 @@ If you have a running Go environment:
 go get github.com/rogierlommers/miniflux-exporter
 ```
 
-If you just want the (linux, 64 bit) binary:
-
-```
-https://github.com/rogierlommers/miniflux-exporter/releases/download/1/miniflux-backup
-```
+If you just want the (linux, 64 bit) binary: [miniflux-backup](https://github.com/rogierlommers/miniflux-exporter/releases/download/1/miniflux-backup)
 
 ### usage
 ```
