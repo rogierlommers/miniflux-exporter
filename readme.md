@@ -26,7 +26,7 @@ If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.
 Put miniflux-exporter in your crontab to frequently make a backup of all your feeds, f.e.:
 
 ```
-@weekly        XXXXXXX
+@weekly        /usr/bin/miniflux-exporter -user YOUR_NAME -pass YOUR_PASS -host http://miniflux2-server -o "/my-backups/miniflux-opml.xml"
 ```
 
 This will backup once a week.
