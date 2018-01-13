@@ -1,5 +1,6 @@
 # custom
 miniflux-backup
+miniflux-exporter
 
 # Binaries for programs and plugins
 *.exe

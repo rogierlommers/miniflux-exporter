@@ -23,7 +23,7 @@ func main() {
 	flag.StringVar(&hostname, "host", "http://localhost:8080", "miniflux hostname, f.e. http://localhost:8080")
 	flag.Parse()
 
-	// start backup
+	// start export
 	client := miniflux.NewClient(hostname, username, password)
 
 	opmlFile, err := client.Export()
@@ -36,5 +36,5 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	logrus.Infof("backup done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetFile)
+	logrus.Infof("export done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetFile)
 }
