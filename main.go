@@ -14,6 +14,7 @@ var (
 	username   string
 	password   string
 	hostname   string
+	silent     bool
 )
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 	flag.StringVar(&username, "user", "", "miniflux username")
 	flag.StringVar(&password, "pass", "", "miniflux password")
 	flag.StringVar(&hostname, "host", "http://localhost:8080", "miniflux hostname, f.e. http://localhost:8080")
+	flag.BoolVar(&silent, "s", false, "if flag -s is provided, the happy-flow won't display any output")
 	flag.Parse()
 
 	// start export
@@ -36,5 +38,8 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	logrus.Infof("export done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetFile)
+	if !silent {
+		logrus.Infof("export done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetFile)
+	}
+
 }

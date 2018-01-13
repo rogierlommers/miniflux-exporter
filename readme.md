@@ -20,13 +20,14 @@ If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.
   	miniflux password
 -user string
   	miniflux username
+-s	if flag -s is provided, the happy-flow won't display any output
 ```
 
 ### in your crontab
 Put miniflux-exporter in your crontab to frequently make a backup of all your feeds, f.e.:
 
 ```
-@weekly        /usr/bin/miniflux-exporter -user YOUR_NAME -pass YOUR_PASS -host http://miniflux2-server -o "/my-backups/miniflux-opml.xml"
+@weekly        /usr/bin/miniflux-exporter -s -user YOUR_NAME -pass YOUR_PASS -host http://miniflux2-server -o "/my-backups/miniflux-opml.xml"
 ```
 
-This will backup once a week.
+This will backup once a week and will only display error messages
