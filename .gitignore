@@ -1,6 +1,7 @@
 # custom
 miniflux-backup
 miniflux-exporter
+opml.xml
 
 # Binaries for programs and plugins
 *.exe
