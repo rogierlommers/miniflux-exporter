@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/davecgh/go-spew/spew"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/miniflux/miniflux-go"
 	"github.com/sirupsen/logrus"
@@ -83,6 +84,7 @@ func exportStarredEntries(c *miniflux.Client) {
 		}
 	}
 
+	spew.Dump(a)
 	err = ioutil.WriteFile(targetBookmarkFile, a, 0644)
 	if err != nil {
 		logrus.Error(err)
