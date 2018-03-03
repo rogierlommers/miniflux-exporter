@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"strconv"
+	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	humanize "github.com/dustin/go-humanize"
+	"github.com/gorilla/feeds"
 	"github.com/miniflux/miniflux-go"
 	"github.com/sirupsen/logrus"
 )
@@ -65,10 +67,19 @@ func exportOPML(c *miniflux.Client) {
 }
 
 func exportStarredEntries(c *miniflux.Client) {
+	// https://github.com/gorilla/feeds
+
 	var (
 		a      []byte
 		number int
 	)
+
+	now := time.Now()
+	feed := &feeds.Feed{
+		Title:       "Miniflux starred entries",
+		Description: "RSS feed from all starred entries in Miniflux",
+		Created:     now,
+	}
 
 	entries, err := c.Entries(&miniflux.Filter{})
 	if err != nil {
@@ -78,14 +89,27 @@ func exportStarredEntries(c *miniflux.Client) {
 
 	for _, entry := range entries.Entries {
 		if entry.Starred {
-			a = append(a, entry.URL...)
-			a = append(a, "\n"...)
+
+			newItem := feeds.Item{
+				Title:       entry.Title,
+				Link:        &feeds.Link{Href: entry.URL},
+				Author:      &feeds.Author{Name: entry.Author},
+				Description: entry.Content,
+				Id:          strconv.Itoa(int(entry.ID)),
+			}
+
+			feed.Items = append(feed.Items, &newItem)
 			number++
 		}
 	}
 
-	spew.Dump(a)
-	err = ioutil.WriteFile(targetBookmarkFile, a, 0644)
+	rss, err := feed.ToRss()
+	if err != nil {
+		logrus.Errorf("error exporting starred items to RSS feed: %s", err)
+		return
+	}
+
+	err = ioutil.WriteFile(rss, a, 0644)
 	if err != nil {
 		logrus.Error(err)
 		return
