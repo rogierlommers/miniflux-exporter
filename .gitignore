@@ -3,7 +3,7 @@ miniflux-backup
 miniflux-exporter
 opml.xml
 run.sh
-dump-miniflux-bookmarks
+dump-miniflux-bookmarks.xml
 dump-miniflux-opml.xml
 
 # Binaries for programs and plugins

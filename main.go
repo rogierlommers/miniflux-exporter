@@ -67,8 +67,6 @@ func exportOPML(c *miniflux.Client) {
 }
 
 func exportStarredEntries(c *miniflux.Client) {
-	// https://github.com/gorilla/feeds
-
 	var (
 		a      []byte
 		number int
@@ -78,6 +76,7 @@ func exportStarredEntries(c *miniflux.Client) {
 	feed := &feeds.Feed{
 		Title:       "Miniflux starred entries",
 		Description: "RSS feed from all starred entries in Miniflux",
+		Link:        &feeds.Link{Href: hostname},
 		Created:     now,
 	}
 
@@ -109,7 +108,7 @@ func exportStarredEntries(c *miniflux.Client) {
 		return
 	}
 
-	err = ioutil.WriteFile(rss, a, 0644)
+	err = ioutil.WriteFile(targetBookmarkFile, []byte(rss), 0644)
 	if err != nil {
 		logrus.Error(err)
 		return
