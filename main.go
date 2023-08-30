@@ -9,7 +9,8 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/gorilla/feeds"
-	"github.com/miniflux/miniflux-go"
+	"miniflux.app/client"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	// get miniflux client
-	c := miniflux.NewClient(hostname, username, password)
+	c := client.New(hostname, username, password)
 
 	// start export to opml
 	if len(targetOPMLFile) > 0 {
@@ -50,7 +51,7 @@ func main() {
 
 }
 
-func exportOPML(c *miniflux.Client) {
+func exportOPML(c *client.Client) {
 	opmlFile, err := c.Export()
 	if err != nil {
 		logrus.Error(err)
@@ -66,7 +67,7 @@ func exportOPML(c *miniflux.Client) {
 	return
 }
 
-func exportStarredEntries(c *miniflux.Client) {
+func exportStarredEntries(c *client.Client) {
 	var (
 		a      []byte
 		number int
@@ -80,7 +81,7 @@ func exportStarredEntries(c *miniflux.Client) {
 		Created:     now,
 	}
 
-	entries, err := c.Entries(&miniflux.Filter{})
+	entries, err := c.Entries(&client.Filter{})
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -115,7 +116,6 @@ func exportStarredEntries(c *miniflux.Client) {
 	}
 
 	message(fmt.Sprintf("export %d bookmarks done, %s written to file %s", number, humanize.Bytes(uint64(len(a))), targetBookmarkFile))
-	return
 }
 
 func message(m string) {
