@@ -5,6 +5,9 @@ opml.xml
 run.sh
 dump-miniflux-bookmarks.xml
 dump-miniflux-opml.xml
+miniflux-bookmarks.xml
+miniflux-opml.xml
+run-export.sh
 
 # Binaries for programs and plugins
 *.exe
