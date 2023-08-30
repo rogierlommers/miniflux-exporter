@@ -8,6 +8,7 @@ dump-miniflux-opml.xml
 miniflux-bookmarks.xml
 miniflux-opml.xml
 run-export.sh
+miniflux-exporter-linux64
 
 # Binaries for programs and plugins
 *.exe
