@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"time"
 
@@ -13,6 +13,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
+
+const AppVersion = "2024-march-12"
 
 var (
 	targetOPMLFile     string
@@ -24,13 +26,22 @@ var (
 )
 
 func main() {
+
+	// parse flags
 	flag.StringVar(&targetOPMLFile, "output-opml", "", "output filename, f.e. /tmp/opml.xml")
 	flag.StringVar(&targetBookmarkFile, "output-bookmarks", "", "output filename, f.e. /tmp/bookmarks.txt")
 	flag.StringVar(&username, "user", "", "miniflux username")
 	flag.StringVar(&password, "pass", "", "miniflux password")
 	flag.StringVar(&hostname, "host", "http://localhost:8080", "miniflux hostname, f.e. http://localhost:8080")
 	flag.BoolVar(&silent, "s", false, "if flag -s is provided, the happy-flow won't display any output")
+	version := flag.Bool("version", false, "prints current version")
 	flag.Parse()
+
+	// version
+	if *version {
+		fmt.Println("miniflux-exporter, version " + AppVersion + ".")
+		os.Exit(0)
+	}
 
 	// get miniflux client
 	c := client.New(hostname, username, password)
@@ -57,21 +68,17 @@ func exportOPML(c *client.Client) {
 		logrus.Error(err)
 	}
 
-	err = ioutil.WriteFile(targetOPMLFile, opmlFile, 0644)
+	err = os.WriteFile(targetOPMLFile, opmlFile, 0644)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
 
 	message(fmt.Sprintf("export OPML done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetOPMLFile))
-	return
 }
 
 func exportStarredEntries(c *client.Client) {
-	var (
-		a      []byte
-		number int
-	)
+	var number int
 
 	now := time.Now()
 	feed := &feeds.Feed{
@@ -109,13 +116,13 @@ func exportStarredEntries(c *client.Client) {
 		return
 	}
 
-	err = ioutil.WriteFile(targetBookmarkFile, []byte(rss), 0644)
+	err = os.WriteFile(targetBookmarkFile, []byte(rss), 0644)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
 
-	message(fmt.Sprintf("export %d bookmarks done, %s written to file %s", number, humanize.Bytes(uint64(len(a))), targetBookmarkFile))
+	message(fmt.Sprintf("export %d bookmarks done, %s written to file %s", number, humanize.Bytes(uint64(len(rss))), targetBookmarkFile))
 }
 
 func message(m string) {
