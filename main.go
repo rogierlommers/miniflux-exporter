@@ -10,8 +10,6 @@ import (
 	humanize "github.com/dustin/go-humanize"
 	"github.com/gorilla/feeds"
 	"miniflux.app/client"
-
-	"github.com/sirupsen/logrus"
 )
 
 const AppVersion = "2024-march-12"
@@ -23,6 +21,7 @@ var (
 	password           string
 	hostname           string
 	silent             bool
+	verbose            bool
 )
 
 func main() {
@@ -34,6 +33,7 @@ func main() {
 	flag.StringVar(&password, "pass", "", "miniflux password")
 	flag.StringVar(&hostname, "host", "http://localhost:8080", "miniflux hostname, f.e. http://localhost:8080")
 	flag.BoolVar(&silent, "s", false, "if flag -s is provided, the happy-flow won't display any output")
+	flag.BoolVar(&verbose, "v", false, "if flag -v is provided, debugging info is printed")
 	version := flag.Bool("version", false, "prints current version")
 	flag.Parse()
 
@@ -41,6 +41,11 @@ func main() {
 	if *version {
 		fmt.Println("miniflux-exporter, version " + AppVersion + ".")
 		os.Exit(0)
+	}
+
+	// verbose
+	if verbose {
+		fmt.Println("running in verbose mode")
 	}
 
 	// get miniflux client
@@ -65,14 +70,16 @@ func main() {
 func exportOPML(c *client.Client) {
 	opmlFile, err := c.Export()
 	if err != nil {
-		logrus.Error(err)
+		fmt.Println("error: " + err.Error())
 	}
+	verboseMessage("opmlFile fetched from miniflux")
 
 	err = os.WriteFile(targetOPMLFile, opmlFile, 0644)
 	if err != nil {
-		logrus.Error(err)
+		fmt.Println("error: " + err.Error())
 		return
 	}
+	verboseMessage("opmlFile written to disk")
 
 	message(fmt.Sprintf("export OPML done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetOPMLFile))
 }
@@ -90,9 +97,10 @@ func exportStarredEntries(c *client.Client) {
 
 	entries, err := c.Entries(&client.Filter{})
 	if err != nil {
-		logrus.Error(err)
+		fmt.Println("error fetching starred entries: " + err.Error())
 		return
 	}
+	verboseMessage(fmt.Sprintf("%d starred/bookmarked entries fetched", len(entries.Entries)))
 
 	for _, entry := range entries.Entries {
 		if entry.Starred {
@@ -107,18 +115,20 @@ func exportStarredEntries(c *client.Client) {
 
 			feed.Items = append(feed.Items, &newItem)
 			number++
+			verboseMessage(fmt.Sprintf("Entry with ID '%s' added", newItem.Id))
 		}
 	}
 
 	rss, err := feed.ToRss()
 	if err != nil {
-		logrus.Errorf("error exporting starred items to RSS feed: %s", err)
+		fmt.Println("error exporting starred items to RSS feed: " + err.Error())
 		return
 	}
+	verboseMessage(fmt.Sprintf("rss file created in-memory, size: %d bytes", len(rss)))
 
 	err = os.WriteFile(targetBookmarkFile, []byte(rss), 0644)
 	if err != nil {
-		logrus.Error(err)
+		fmt.Println("error writing target bookmark file: " + err.Error())
 		return
 	}
 
@@ -127,6 +137,12 @@ func exportStarredEntries(c *client.Client) {
 
 func message(m string) {
 	if !silent {
-		logrus.Infof(m)
+		fmt.Println(m)
+	}
+}
+
+func verboseMessage(m string) {
+	if verbose {
+		fmt.Println(m)
 	}
 }

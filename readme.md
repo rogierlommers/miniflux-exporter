@@ -17,8 +17,9 @@ If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.
 -user string
   	miniflux username
 -s	if flag -s is provided, the happy-flow won't display any output
-  -version
-    	prints current version
+-v  if flag -v is provided, a lot of debugging details are printed
+-version
+    prints current version
 ```
 
 ### in your crontab
