@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-go@v3
 
       - name: Build
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/miniflux-exporter ./src/*.go
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/miniflux-exporter *.go
 
       - name: List files in ./bin directory
         run: |
