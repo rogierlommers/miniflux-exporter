@@ -2,7 +2,7 @@
 
 ### installation
 
-If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.com/rogierlommers/miniflux-exporter/releases/download/6/miniflux-exporter-linux64)
+If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.com/rogierlommers/miniflux-exporter/releases/download/9/miniflux-exporter)
 
 ### usage
 ```
