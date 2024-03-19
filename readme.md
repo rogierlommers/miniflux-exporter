@@ -3,7 +3,17 @@
 ### running in a docker container
 
 ```
-docker run rogierlommers/miniflux-exporter
+docker run --rm \
+--user $(id -u):$(id -g) \
+-v /local-output-dir:/output \
+rogierlommers/miniflux-exporter \
+/app/miniflux-exporter \
+-host https://yourminiflux.instance.com \
+-user YOUR-MINIFLUX-USERNAME \
+-pass YOUR-MINIFLUX-PASSWORD \
+-output-stars /output/export-stars.xml \
+-output-opml /output/opml.xml \
+-output-unread /output/export-unread.xml
 ```
 
 ### running the binary
@@ -34,7 +44,7 @@ If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.
 Put miniflux-exporter in your crontab to frequently make a backup of all your feeds, f.e.:
 
 ```
-@weekly        /usr/bin/miniflux-exporter -s -user YOUR_NAME -pass YOUR_PASS -host http://miniflux2-server -output-opml "/my-backups/feeds-opml.xml" -output-stars "/my-backups/miniflux-starred-articles.xml" -output-unread "/my-backups/miniflux-unread-articles.xml"
+@weekly        /usr/bin/miniflux-exporter -s -user YOUR_NAME -pass YOUR_PASS -host http://miniflux-server -output-opml "/my-backups/feeds-opml.xml" -output-stars "/my-backups/miniflux-starred-articles.xml" -output-unread "/my-backups/miniflux-unread-articles.xml"
 ```
 
 This will backup once a week the starred items, the unread items and exports all feeds to an OPML file and will only display error messages. Please note that the different outputs are all options. So if you only want to export the starred articles, then you should only provide the `-output`-stars flag.
