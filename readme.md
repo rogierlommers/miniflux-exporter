@@ -1,6 +1,12 @@
 ## miniflux-exporter
 
-### installation
+### running in a docker container
+
+```
+docker run rogierlommers/miniflux-exporter
+```
+
+### running the binary
 
 If you just want the (linux, 64 bit) binary: [miniflux-exporter](https://github.com/rogierlommers/miniflux-exporter/releases/download/9/miniflux-exporter)
 
