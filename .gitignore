@@ -10,6 +10,7 @@ miniflux-opml.xml
 run-export.sh
 miniflux-exporter-linux64
 .DS_Store
+.idea
 
 # Binaries for programs and plugins
 *.exe
