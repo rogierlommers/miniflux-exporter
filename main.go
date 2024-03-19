@@ -12,29 +12,40 @@ import (
 	"miniflux.app/client"
 )
 
-const AppVersion = "2024-march-12"
+const (
+	AppVersion        = "2024-march-12"
+	ExportTypeStarred = "starred-articles"
+	ExportTypeUnread  = "unread-articles"
+)
 
 var (
-	targetOPMLFile     string
-	targetBookmarkFile string
-	username           string
-	password           string
-	hostname           string
-	silent             bool
-	verbose            bool
+	targetOPMLFile    string
+	targetStarredFile string
+	targetUnreadsFile string
+	username          string
+	password          string
+	hostname          string
+	silent            bool
+	verbose           bool
 )
 
 func main() {
 
-	// parse flags
+	// parse filename flags
 	flag.StringVar(&targetOPMLFile, "output-opml", "", "output filename, f.e. /tmp/opml.xml")
-	flag.StringVar(&targetBookmarkFile, "output-bookmarks", "", "output filename, f.e. /tmp/bookmarks.txt")
+	flag.StringVar(&targetStarredFile, "output-stars", "", "output filename, f.e. /tmp/starred-articles.xml")
+	flag.StringVar(&targetUnreadsFile, "output-unread", "", "output filename, f.e. /tmp/unread-articles.xml")
+
+	// parse usenanme/pass/host
 	flag.StringVar(&username, "user", "", "miniflux username")
 	flag.StringVar(&password, "pass", "", "miniflux password")
 	flag.StringVar(&hostname, "host", "http://localhost:8080", "miniflux hostname, f.e. http://localhost:8080")
+
+	// parse options
 	flag.BoolVar(&silent, "s", false, "if flag -s is provided, the happy-flow won't display any output")
 	flag.BoolVar(&verbose, "v", false, "if flag -v is provided, debugging info is printed")
 	version := flag.Bool("version", false, "prints current version")
+
 	flag.Parse()
 
 	// version
@@ -59,10 +70,17 @@ func main() {
 	}
 
 	// start export bookmarks/starred entries
-	if len(targetBookmarkFile) > 0 {
-		exportStarredEntries(c)
+	if len(targetStarredFile) > 0 {
+		exportEntries(ExportTypeStarred, c)
 	} else {
 		message("skipping export of bookmarks/starred entries (see -help for more info)")
+	}
+
+	// start export unread entries
+	if len(targetUnreadsFile) > 0 {
+		exportEntries(ExportTypeUnread, c)
+	} else {
+		message("skipping export of unread entries (see -help for more info)")
 	}
 
 }
@@ -80,59 +98,86 @@ func exportOPML(c *client.Client) {
 		return
 	}
 	verboseMessage("opmlFile written to disk")
-
 	message(fmt.Sprintf("export OPML done, %s written to file %s", humanize.Bytes(uint64(len(opmlFile))), targetOPMLFile))
 }
 
-func exportStarredEntries(c *client.Client) {
+func exportEntries(exportType string, c *client.Client) {
+
+	// configuration of use case specific stuff
+	var (
+		feedTitle       string
+		feedDescription string
+		targetFilename  string
+		minifluxFilter  *client.Filter
+	)
+
+	switch exportType {
+	case "starred-articles":
+		verboseMessage("applying settings for starred-articles")
+		feedTitle = "Miniflux starred entries"
+		feedDescription = "RSS feed from all starred entries in Miniflux"
+		targetFilename = targetStarredFile
+		minifluxFilter = &client.Filter{
+			Starred: client.FilterOnlyStarred,
+		}
+
+	case "unread-articles":
+		verboseMessage("applying settings for unread-articles")
+		feedTitle = "Miniflux starred entries"
+		feedDescription = "RSS feed from all starred entries in Miniflux"
+		targetFilename = targetUnreadsFile
+		minifluxFilter = &client.Filter{
+			Status: client.EntryStatusUnread,
+		}
+	}
+
+	// start actual export
 	var number int
 
 	now := time.Now()
 	feed := &feeds.Feed{
-		Title:       "Miniflux starred entries",
-		Description: "RSS feed from all starred entries in Miniflux",
+		Title:       feedTitle,
+		Description: feedDescription,
 		Link:        &feeds.Link{Href: hostname},
 		Created:     now,
 	}
 
-	entries, err := c.Entries(&client.Filter{})
+	entries, err := c.Entries(minifluxFilter)
 	if err != nil {
-		fmt.Println("error fetching starred entries: " + err.Error())
+		fmt.Println("error entries: " + err.Error())
 		return
 	}
-	verboseMessage(fmt.Sprintf("%d starred/bookmarked entries fetched", len(entries.Entries)))
+	verboseMessage(fmt.Sprintf("%d entries fetched", len(entries.Entries)))
 
 	for _, entry := range entries.Entries {
-		if entry.Starred {
 
-			newItem := feeds.Item{
-				Title:       entry.Title,
-				Link:        &feeds.Link{Href: entry.URL},
-				Author:      &feeds.Author{Name: entry.Author},
-				Description: entry.Content,
-				Id:          strconv.Itoa(int(entry.ID)),
-			}
-
-			feed.Items = append(feed.Items, &newItem)
-			number++
-			verboseMessage(fmt.Sprintf("Entry with ID '%s' added", newItem.Id))
+		newItem := feeds.Item{
+			Title:       entry.Title,
+			Link:        &feeds.Link{Href: entry.URL},
+			Author:      &feeds.Author{Name: entry.Author},
+			Description: entry.Content,
+			Id:          strconv.Itoa(int(entry.ID)),
 		}
+
+		feed.Items = append(feed.Items, &newItem)
+		number++
+		verboseMessage(fmt.Sprintf("Entry with ID '%s' added", newItem.Id))
 	}
 
 	rss, err := feed.ToRss()
 	if err != nil {
-		fmt.Println("error exporting starred items to RSS feed: " + err.Error())
+		fmt.Println("error items to RSS feed: " + err.Error())
 		return
 	}
 	verboseMessage(fmt.Sprintf("rss file created in-memory, size: %d bytes", len(rss)))
 
-	err = os.WriteFile(targetBookmarkFile, []byte(rss), 0644)
+	err = os.WriteFile(targetFilename, []byte(rss), 0644)
 	if err != nil {
-		fmt.Println("error writing target bookmark file: " + err.Error())
+		fmt.Println("error writing target file: " + err.Error())
 		return
 	}
 
-	message(fmt.Sprintf("export %d bookmarks done, %s written to file %s", number, humanize.Bytes(uint64(len(rss))), targetBookmarkFile))
+	message(fmt.Sprintf("exported %d articles, %s written to file %s", number, humanize.Bytes(uint64(len(rss))), targetFilename))
 }
 
 func message(m string) {
