@@ -10,10 +10,10 @@ jobs:
   build-binary:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@latest
+        uses: actions/setup-go@v4
 
       - name: Build
         run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/miniflux-exporter *.go
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-binary
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@master
         with:
